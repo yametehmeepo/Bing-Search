@@ -1,0 +1,223 @@
+<html>
+<head>
+    <title>bing search</title>
+	<style type="text/css">
+		body{background-color: #333;margin: 0;padding: 0;}
+		.bg-div{
+			box-sizing: border-box;
+			text-align:center;
+			height: 100%; 
+			width: 100%;
+			background: url(http://img.mukewang.com/52da5e7d0001c0f813660768.jpg) center center no-repeat;
+			background-size: cover;
+		}
+		.logo{
+		    float:left;
+			background: url(http://img.mukewang.com/52da5e530001eea901070053.jpg) no-repeat;
+			margin: -4px 18px 0 0;
+			height: 53px;
+			width: 107px;
+		}
+		.search-warp{
+		    float:left;
+			background-color:#fff;
+			width:407px;
+			padding:5px;
+		}
+		.search-input{
+			float:left;
+			border: 0;
+			font-size: 100%;
+			width: 375px;
+			outline: none;/**/
+			height:29px;
+			line-height: 29px;
+		}
+		.search-submit{
+			float:left;
+			cursor: pointer;
+			height: 29px;
+			width: 29px;
+			background: transparent url(http://img.mukewang.com/52da5df800012b1e02220137.jpg) no-repeat -30px -107px;
+			border: 0;
+		}
+		.search-box{
+			/* position: absolute;
+			top:20%;
+			left:8%; */
+			padding: 190px 0 0 90px;
+			overflow: hidden;
+		}
+		.search-result{
+			display: none;
+			position: absolute;
+			width: 417px;
+			background: #fff;
+			border: 1px solid #ccc;
+			box-sizing: border-box;
+		}
+		.search-result ul{
+			list-style: none;
+			margin: 0;
+			padding: 0;
+		}
+		.search-result ul li{
+			font-size: 14px;
+			line-height: 24px;
+			color: #000;
+			padding: 5px 0 5px 10px;
+			text-align: left;
+			cursor: pointer;
+			font-family: 'Segoe UI',Arial,Helvetica,Sans-Serif;
+		}
+		.search-result ul li:hover{
+			text-decoration: underline;
+			background: #999;
+		}
+	</style>
+</head>
+<body>
+	<div class="bg-div">
+		<div class="search-box" id="search-box">
+			<div class="logo"></div>
+		    <form action="http://cn.bing.com/search" target="_blank" method="get" class="search-warp" id="search-form">
+					<input class="search-input" type="text" name="q" id="search-input" autocomplete="off">
+					<input class="search-submit" type="submit" value=""/>
+			</form>
+		</div>
+		<div class="search-result" id="search-result">
+			<ul>
+				
+			</ul>
+		</div>
+	</div>
+</body><!-- http://cn.bing.com/search?q= -->
+<!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
+<script type="text/javascript">
+	//JQ
+	/*$(function(){
+		$('.search-input').keyup(function () {
+			var inputText = $('.search-input').val();
+			$.ajax({
+				type: "GET",
+				url: "http://cn.bing.com/AS/Suggestions?pt=page.home&mkt=zh-cn&qry="+inputText+"&cp=1&cvid=81E66CBCCC194A9DA5E38C819B31DA8F",
+				dataType: "html",
+				success: function(data){
+					var html = '';
+					$(data).find('.sa_tm').each(function(){
+						html+='<li>'+$(this).text()+'</li>';
+					});
+					$('.search-result ul').html(html);
+					$('.search-result').show().css({
+						top:$('.search-warp').offset().top+$('.search-warp').outerHeight(),
+						left:$('.search-warp').offset().left
+					});	
+					var value = $('.search-input').val();
+					if(value.length==0||$.trim(value)==''){
+						$('.search-result').hide();
+					}
+				},
+				error:function(jqXHR){
+					alert("发生错误:"+jqXHR.status);
+				}
+			});
+			
+			
+		});
+		$(document).click(function(){
+			$('.search-result').hide();
+		});
+		$('.search-result').click(function(e){
+			e.stopPropagation();
+		});
+		$('.search-result').delegate('li','click',function(){
+			location.href="http://cn.bing.com/search?q="+$(this).text();
+		});
+	});*/
+
+	/*=======================================================*/
+	//JS
+	var _dom = getDOM('search-input');
+	var _result = getDOM('search-result');
+	var _form = getDOM('search-form');
+	function getDOM(id){
+		return document.getElementById(id)?document.getElementById(id):document;
+	}
+	//添加事件
+	function addEvent(el,event,fn){
+		if(el.addEventListener){
+			el.addEventListener(event,fn,false);
+		}else if(el.attachEvent){
+			el.attachEvent("on"+event,fn);
+		}
+	}
+	//添加代理事件
+	function delegateEvent(tar,event,fn){
+		addEvent(document,event,function(e){
+			if(e.target.nodeName==tar.toUpperCase()){
+				fn.call(e.target);
+			}
+		});
+	}
+	//替换掉所有空格
+	function Trim(string){
+		return string.replace(/\s+/g, "");
+	}
+	//变成可操纵DOM对象
+	function parseDOM(str){
+		var argDIV = document.createElement('div');
+		argDIV.innerHTML = str;
+		return argDIV;
+	}
+	//给输入框添加keyup事件
+	addEvent(_dom,'keyup',function(){
+		var value = _dom.value;
+		if(value.length==0||Trim(value).length==0){
+			_result.style.display = "none";
+		}else{
+			_result.style.display = "block";
+			_result.style.left = _form.offsetLeft;
+			_result.style.top = _form.offsetTop + _form.offsetHeight;
+		}
+		//Ajax 原生JS
+		var _xhr=null;
+		if(window.XMLHttpRequest){
+			_xhr = new XMLHttpRequest();
+		}else{
+			_xhr = new ActiveXObject("Msxml2.XMLHTTP");
+		}
+		_xhr.open("GET","http://cn.bing.com/AS/Suggestions?pt=page.home&mkt=zh-cn&qry="+value+"&cp=1&cvid=81E66CBCCC194A9DA5E38C819B31DA8F",true);
+		_xhr.send();
+		_xhr.onreadystatechange = function(){
+			if(_xhr.readyState===4&&_xhr.status===200){
+				var html = '';
+				var responseDOM = parseDOM(_xhr.responseText);
+				var resultlDIV = responseDOM.getElementsByTagName('div');
+				for(var i=0;i<resultlDIV.length;i++){
+					if(resultlDIV[i].className=="sa_tm"){
+						html+='<li>'+resultlDIV[i].innerHTML.replace(/<.+?>/gim,'')+'</li>';
+					}
+				}
+				_result.getElementsByTagName('ul')[0].innerHTML = html;
+			}
+		};
+	});
+	//点击提示信息跳转到相应搜索页
+	delegateEvent('li','click',function(){
+		var k = this.innerHTML;
+		location.href = "http://cn.bing.com/search?q=" + k;
+	});
+	//点击提示框之外部分隐藏提示框
+	addEvent(document,'click',function(){
+		_result.style.display = "none";
+	});
+	//点击提示框阻止冒泡 本例子需要跳转 不需要阻止冒泡
+	/*addEvent(_result,'click',function(e){
+		if(e.stopPropagation){
+			e.stopPropagation();
+		}else{
+			e.cancelBubble = true;
+		}
+	});*/
+</script>
+</html>
